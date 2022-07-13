@@ -11,7 +11,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const PORT = configService.get<string>('PORT');
+  const PORT = configService.get<string>('PORT') || 4000;
   app.useGlobalPipes(new ValidationPipe({whitelist: true}));
 
   const DOC_API = await readFile(resolve(cwd(), 'doc', 'api.yaml'), 'utf-8');
