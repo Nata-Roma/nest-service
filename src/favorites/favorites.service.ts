@@ -1,102 +1,211 @@
+import { Track } from './../tracks/entities/track.entity';
+import { Artist } from './../artists/entities/artist.entity';
+import { Album } from './../albums/entities/album.entity';
+import { PrismaService } from './../prisma/prisma.service';
 import { DbServiceService } from './../db-service/db-service.service';
 import {
   Injectable,
-  HttpStatus,
-  UnprocessableEntityException,
   NotFoundException,
 } from '@nestjs/common';
 
 @Injectable()
 export class FavoritesService {
-  constructor(private dbService: DbServiceService) {}
+  constructor(
+    private dbService: DbServiceService,
+    private prisma: PrismaService,
+  ) {}
 
-  createTrack(id: string) {
-    const findRecord = this.dbService.track.findOne(id);
+  async createTrack(id: string) {
+    const item = await this.prisma.favorite.findMany();
 
-    if (!Object.keys(findRecord).length) {
-      throw new UnprocessableEntityException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
-        message: 'Record Id is not found',
+    if (!item.length) {
+      const newItem = await this.prisma.favorite.create({ data: {} });
+      const newRelation = await this.prisma.track.update({
+        where: { id },
+        data: {
+          favorite: {
+            connect: {
+              id: newItem.id,
+            },
+          },
+        },
+        include: {
+          favorite: true,
+        },
       });
+      return newRelation;
     }
 
-    const resp = this.dbService.favorite.createTrack(id);
-
+    const newRelation = await this.prisma.track.update({
+      where: { id },
+      data: {
+        favorite: {
+          connect: {
+            id: item[0].id,
+          },
+        },
+      },
+      include: {
+        favorite: true,
+      },
+    });
+    //return newRelation;
     return { message: 'Record Id is added' };
   }
 
-  createArtist(id: string) {
-    const findRecord = this.dbService.artist.findOne(id);
+  async createArtist(id: string) {
+    const item = await this.prisma.favorite.findMany();
 
-    if (!Object.keys(findRecord).length) {
-      throw new UnprocessableEntityException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
-        message: 'Record Id is not found',
+    if (!item.length) {
+      const newItem = await this.prisma.favorite.create({ data: {} });
+      const newRelation = await this.prisma.artist.update({
+        where: { id },
+        data: {
+          favorite: {
+            connect: {
+              id: newItem.id,
+            },
+          },
+        },
+        include: {
+          favorite: true,
+        },
       });
+      //return newRelation;
+      return { message: 'Record Id is added' };
     }
 
-    const resp = this.dbService.favorite.createArtist(id);
-
+    const newRelation = await this.prisma.artist.update({
+      where: { id },
+      data: {
+        favorite: {
+          connect: {
+            id: item[0].id,
+          },
+        },
+      },
+      include: {
+        favorite: true,
+      },
+    });
+    //return newRelation;
     return { message: 'Record Id is added' };
   }
 
-  createAlbum(id: string) {
-    const findRecord = this.dbService.album.findOne(id);
+  async createAlbum(id: string) {
+    const item = await this.prisma.favorite.findMany();
 
-    if (!Object.keys(findRecord).length) {
-      throw new UnprocessableEntityException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
-        message: 'Record Id is not found',
+    if (!item.length) {
+      const newItem = await this.prisma.favorite.create({ data: {} });
+      const newRelation = await this.prisma.album.update({
+        where: { id },
+        data: {
+          favorite: {
+            connect: {
+              id: newItem.id,
+            },
+          },
+        },
+        include: {
+          favorite: true,
+        },
       });
+      //return newRelation;
+      return { message: 'Record Id is added' };
     }
 
-    const resp = this.dbService.favorite.createAlbum(id);
-
+    const newRelation = await this.prisma.album.update({
+      where: { id },
+      data: {
+        favorite: {
+          connect: {
+            id: item[0].id,
+          },
+        },
+      },
+      include: {
+        favorite: true,
+      },
+    });
+    //return newRelation;
     return { message: 'Record Id is added' };
   }
 
-  findAll() {
-    const table = this.dbService.favorite.findAll();
-    const keys = Object.keys(table);
+  async findAll() {
+    const item = await this.prisma.favorite.findMany();
 
-    const payload = keys.reduce((acc, key) => {
-      acc[key] = table[key].map((id: string) => {
-        if (key === 'tracks') {
-          return this.dbService.track.findOne(id);
-        } else if (key === 'artists') {
-          return this.dbService.artist.findOne(id);
-        } else if (key === 'albums') {
-          return this.dbService.album.findOne(id);
-        }
-      });
+    if (!item.length) {
+      return [];
+    }
 
-      return acc;
-    }, {});
+    const albums = await this.prisma.album.findMany({
+      where: {
+        favoriteId: item[0].id,
+      },
+    });
 
+    const artists = await this.prisma.artist.findMany({
+      where: {
+        favoriteId: item[0].id,
+      },
+    });
+
+    const tracks = await this.prisma.track.findMany({
+      where: {
+        favoriteId: item[0].id,
+      },
+    });
+
+    const payload = {
+      albums: albums.map((album) => new Album(album)),
+      artists: artists.map((artist) => new Artist(artist)),
+      tracks: tracks.map((track) => new Track(track)),
+    };
     return payload;
   }
 
-  removeTrack(id: string) {
-    const resp = this.dbService.favorite.removeTrack(id);
-    console.log(resp);
-    if (resp.status === 404) throw new NotFoundException();
+  async removeTrack(id: string) {
+    const item = await this.prisma.favorite.findMany();
+    if (!item.length) {
+      throw new NotFoundException();
+    }
 
+    const resp = await this.prisma.track.update({
+      where: { id },
+      data: {
+        favoriteId: null,
+      },
+    });
     return;
   }
 
-  removeArtist(id: string) {
-    const resp = this.dbService.favorite.removeArtist(id);
-    console.log(resp);
-    if (resp.status === 404) throw new NotFoundException();
+  async removeArtist(id: string) {
+    const item = await this.prisma.favorite.findMany();
+    if (!item.length) {
+      throw new NotFoundException();
+    }
 
+    const resp = await this.prisma.artist.update({
+      where: { id },
+      data: {
+        favoriteId: null,
+      },
+    });
     return;
   }
 
-  removeAlbum(id: string) {
-    const resp = this.dbService.favorite.removeAlbum(id);
-    console.log(resp);
-    if (resp.status === 404) throw new NotFoundException();
+  async removeAlbum(id: string) {
+    const item = await this.prisma.favorite.findMany();
+    if (!item.length) {
+      throw new NotFoundException();
+    }
 
+    const resp = await this.prisma.album.update({
+      where: { id },
+      data: {
+        favoriteId: null,
+      },
+    });
     return;
   }
 }

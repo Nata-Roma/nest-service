@@ -11,8 +11,8 @@ export class DbUser {
       login: data.login,
       password: data.password,
       version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      //createdAt: Date.now(),
+      //updatedAt: Date.now(),
     });
     this.table.push(newUser);
     
@@ -35,7 +35,7 @@ export class DbUser {
       const newUser = {
         ...user,
         version: ++user.version,
-        updatedAt: Date.now(),
+        //updatedAt: Date.now(),
         password: data.newPassword,
       };
       this.table[userIndex] = newUser;

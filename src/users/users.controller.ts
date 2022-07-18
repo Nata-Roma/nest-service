@@ -1,5 +1,5 @@
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, HttpCode, Header, UseInterceptors, ClassSerializerInterceptor, ValidationPipe, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, HttpCode, Header, UseInterceptors, ClassSerializerInterceptor, ParseUUIDPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 

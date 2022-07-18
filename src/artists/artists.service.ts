@@ -1,43 +1,44 @@
-import { DbServiceService } from './../db-service/db-service.service';
+import { Artist } from './entities/artist.entity';
+import { PrismaService } from './../prisma/prisma.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 
 @Injectable()
 export class ArtistsService {
-  constructor(private dbService: DbServiceService) {}
+  constructor(private prisma: PrismaService) {}
 
-  create(createArtistDto: CreateArtistDto) {
-    return this.dbService.artist.create(createArtistDto);
+  async create(createArtistDto: CreateArtistDto) {
+    const artist = await this.prisma.artist.create({
+      data: createArtistDto,
+    });
+
+    return new Artist(artist);
   }
 
-  findAll() {
-    return this.dbService.artist.findAll();
+  async findAll() {
+    const artists = await this.prisma.artist.findMany();
+    return artists.map((item) => new Artist(item));
   }
 
-  findOne(id: string) {
-    const artist = this.dbService.artist.findOne(id);
+  async findOne(id: string) {
+    const artist = await this.prisma.artist.findUnique({ where: { id } });
+    if (!artist) throw new NotFoundException();
 
-    if (!Object.keys(artist).length) throw new NotFoundException();
-
-    return artist;
+    return new Artist(artist);
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto) {
-    const resp = this.dbService.artist.update(id, updateArtistDto);
+  async update(id: string, updateArtistDto: UpdateArtistDto) {
+    const artist = await this.prisma.artist.update({
+      where: { id },
+      data: updateArtistDto,
+    });
 
-    if (resp.status === 404) throw new NotFoundException();
-
-    return resp.artist;
+    return new Artist(artist);
   }
 
-  remove(id: string) {
-    const resp = this.dbService.artist.remove(id);
-    if (resp.status === 404) throw new NotFoundException();
-
-    this.dbService.track.removeArtistLink(id);
-    this.dbService.album.removeArtistLink(id);
-    this.dbService.favorite.removeArtist(id);
+  async remove(id: string) {
+    const resp = await this.prisma.artist.delete({ where: { id } });
     return;
   }
 }
