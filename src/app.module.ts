@@ -1,4 +1,3 @@
-import { DbServiceModule } from './db-service/db-service.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -16,7 +15,6 @@ import { PrismaModule } from './prisma/prisma.module';
       isGlobal: true,
     }),
     UsersModule,
-    DbServiceModule,
     ArtistsModule,
     AlbumsModule,
     TracksModule,

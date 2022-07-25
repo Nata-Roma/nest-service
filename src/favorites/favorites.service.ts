@@ -2,7 +2,6 @@ import { Track } from './../tracks/entities/track.entity';
 import { Artist } from './../artists/entities/artist.entity';
 import { Album } from './../albums/entities/album.entity';
 import { PrismaService } from './../prisma/prisma.service';
-import { DbServiceService } from './../db-service/db-service.service';
 import {
   Injectable,
   NotFoundException,
@@ -11,7 +10,6 @@ import {
 @Injectable()
 export class FavoritesService {
   constructor(
-    private dbService: DbServiceService,
     private prisma: PrismaService,
   ) {}
 

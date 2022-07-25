@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  nest-service:
+    stdin_open: true
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: nest-service
+    # Run a command against the development stage of the image
+    #command: npm run start:prod
+    restart: always
+    ports:
+      - "${PORT}:4000"
+    networks:
+      - nest_postgres_network
+    depends_on:
+      - postgres
+    volumes:
+      - .:/usr/src/app
+      - ./usr/src/app/node_modules
+  postgres:
+    build:
+      dockerfile: ./docker/Dockerfile
+      context: .
+    container_name: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+    ports:
+      - 5432:5432
+    networks:
+      - nest_postgres_network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - postgres_logs:/database/logs
+    restart: unless-stopped
+networks:
+  nest_postgres_network:
+    driver: bridge
+volumes:
+  postgres-data:
+  postgres_logs:

@@ -14,21 +14,16 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const PORT = configService.get<string>('PORT') || 4000;
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
-  const DOC_API = await readFile(resolve(cwd(), 'doc', 'api.yaml'), 'utf-8');
-  const document = parse(DOC_API);
+  // const DOC_API = await readFile(resolve(cwd(), 'doc', 'api.yaml'), 'utf-8');
+  // const document = parse(DOC_API);
 
-  SwaggerModule.setup('doc', app, document);
+  // SwaggerModule.setup('doc', app, document);
 
   await app.listen(PORT);
 }
 bootstrap();
-
-//
-//   const document = parse(DOC_API);
-
-//   SwaggerModule.setup('doc', app, document);
