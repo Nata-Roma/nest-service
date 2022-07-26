@@ -1,4 +1,6 @@
+import { LoginUserDto } from './dto/login-user.dto';
 import { PrismaService } from './../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import {
   ForbiddenException,
@@ -11,13 +13,14 @@ import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private prisma: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
     const user = await this.prisma.user.create({
-      data: createUserDto,
+      data: {
+        ...createUserDto,
+        password: await bcrypt.hash(createUserDto.password, 10),
+      },
     });
 
     return new User(user);
@@ -36,10 +39,15 @@ export class UsersService {
   }
 
   async update(id: string, updatePasswordDto: UpdatePasswordDto) {
-    const oldUser = await this.prisma.user.findUnique({where: {id}});
+    const oldUser = await this.prisma.user.findUnique({ where: { id } });
 
     if (oldUser) {
-      if (oldUser.password !== updatePasswordDto.oldPassword) {
+      const match = bcrypt.compare(
+        updatePasswordDto.oldPassword,
+        oldUser.password,
+      );
+      //if (oldUser.password !== updatePasswordDto.oldPassword) {
+      if (!match) {
         throw new ForbiddenException({
           status: HttpStatus.FORBIDDEN,
           message: 'Wrong credentials',
@@ -52,7 +60,7 @@ export class UsersService {
         id,
       },
       data: {
-        password: updatePasswordDto.newPassword,
+        password: await bcrypt.hash(updatePasswordDto.newPassword, 10),
         version: { increment: 1 },
       },
     });
@@ -64,5 +72,21 @@ export class UsersService {
     const resp = await this.prisma.user.delete({ where: { id } });
 
     return;
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { login: loginUserDto.login },
+    });
+
+    if (user) {
+      const match = bcrypt.compare(loginUserDto.password, user.password);
+      if (!match) {
+        throw new ForbiddenException({
+          status: HttpStatus.FORBIDDEN,
+          message: 'Wrong credentials',
+        });
+      }
+    }
   }
 }
