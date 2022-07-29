@@ -15,6 +15,9 @@ export class User {
   @Transform(({ value }) => value.getTime())
   updatedAt: Date;
 
+  @Exclude({ toPlainOnly: true })
+  refreshToken?: string;
+
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
   }

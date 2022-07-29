@@ -19,10 +19,10 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
-  // const DOC_API = await readFile(resolve(cwd(), 'doc', 'api.yaml'), 'utf-8');
-  // const document = parse(DOC_API);
+  const DOC_API = await readFile(resolve(cwd(), 'doc', 'api.yaml'), 'utf-8');
+  const document = parse(DOC_API);
 
-  // SwaggerModule.setup('doc', app, document);
+  SwaggerModule.setup('doc', app, document);
 
   await app.listen(PORT);
 }

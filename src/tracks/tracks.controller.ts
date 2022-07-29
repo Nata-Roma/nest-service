@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Delete, Header, Put, HttpCode, ParseUUIDPipe } from '@nestjs/common';
+import { JwtAuthGuard } from './../auths/jwt-auth.guard';
+import { Controller, Get, Post, Body, Param, Delete, Header, Put, HttpCode, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { TracksService } from './tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
@@ -7,6 +8,7 @@ import { UpdateTrackDto } from './dto/update-track.dto';
 export class TracksController {
   constructor(private readonly tracksService: TracksService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @HttpCode(201)
   @Header('Content-Type', 'application/json')
@@ -17,8 +19,6 @@ export class TracksController {
   @Get()
   @Header('Content-Type', 'application/json')
   findAll() {
-    console.log('TRACK');
-    
     return this.tracksService.findAll();
   }
 
@@ -28,12 +28,14 @@ export class TracksController {
     return this.tracksService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @Header('Content-Type', 'application/json')
   update(@Param('id', new ParseUUIDPipe({version: '4'})) id: string, @Body() updateTrackDto: UpdateTrackDto) {
     return this.tracksService.update(id, updateTrackDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   remove(@Param('id', new ParseUUIDPipe({version: '4'})) id: string) {

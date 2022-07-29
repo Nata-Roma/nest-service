@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Delete, Header, HttpCode, Put, ParseUUIDPipe } from '@nestjs/common';
+import { JwtAuthGuard } from './../auths/jwt-auth.guard';
+import { Controller, Get, Post, Body, Param, Delete, Header, HttpCode, Put, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { ArtistsService } from './artists.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
@@ -8,6 +9,7 @@ export class ArtistsController {
   constructor(private readonly artistsService: ArtistsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @HttpCode(201)
   @Header('Content-Type', 'application/json')
   create(@Body() createArtistDto: CreateArtistDto) {
@@ -26,12 +28,14 @@ export class ArtistsController {
     return this.artistsService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @Header('Content-Type', 'application/json')
   update(@Param('id', new ParseUUIDPipe({version: '4'})) id: string, @Body() updateArtistDto: UpdateArtistDto) {
     return this.artistsService.update(id, updateArtistDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   @Header('Content-Type', 'application/json')

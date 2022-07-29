@@ -14,7 +14,12 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
     switch (exception.code) {
       case '2002': {
         console.log('2002');
-
+        const status = HttpStatus.FORBIDDEN;
+        const message = 'Incorrect credentials';
+        response.status(status).json({
+          statusCode: status,
+          message: message,
+        });
         break;
       }
       case 'P2025': {

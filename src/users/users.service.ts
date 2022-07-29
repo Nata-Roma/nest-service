@@ -38,15 +38,22 @@ export class UsersService {
     return new User(user);
   }
 
+  async findByLogin(login: string) {
+    const user = await this.prisma.user.findUnique({ where: { login } });
+    if (!user) throw new NotFoundException();
+
+    return user;
+  }
+
   async update(id: string, updatePasswordDto: UpdatePasswordDto) {
     const oldUser = await this.prisma.user.findUnique({ where: { id } });
 
     if (oldUser) {
-      const match = bcrypt.compare(
+      const match = await bcrypt.compare(
         updatePasswordDto.oldPassword,
         oldUser.password,
       );
-      //if (oldUser.password !== updatePasswordDto.oldPassword) {
+
       if (!match) {
         throw new ForbiddenException({
           status: HttpStatus.FORBIDDEN,
@@ -74,19 +81,14 @@ export class UsersService {
     return;
   }
 
-  async login(loginUserDto: LoginUserDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { login: loginUserDto.login },
+  async setRefreshToken(id: string, token: string) {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        refreshToken: await bcrypt.hash(token, 10),
+      },
     });
 
-    if (user) {
-      const match = bcrypt.compare(loginUserDto.password, user.password);
-      if (!match) {
-        throw new ForbiddenException({
-          status: HttpStatus.FORBIDDEN,
-          message: 'Wrong credentials',
-        });
-      }
-    }
+    return;
   }
 }

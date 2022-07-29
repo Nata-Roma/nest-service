@@ -117,7 +117,7 @@ security:
   - bearerAuth: []
 
 paths:
-  /login:
+  /auth/login:
     post:
       tags:
         - Login
@@ -149,12 +149,55 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
+                  accsessToken:
                     type: string
-                description: JWT Token
+                    description: JWT Token
+                  refreshToken:
+                    type: string
+                    description: JWT Token
+        400:
+          description: Bad request
         403:
           description: Incorrect login or password
-  /signup:
+  /auth/refresh:
+    post:
+      tags:
+        - Refresh
+      security: []
+      summary: Refresh
+      description: Refresh and return JWT-tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              title: example
+              properties:
+                refreshToken:
+                  type: string
+                  description: JWT Token
+              required:
+                - token
+      responses:
+        200:
+          description: Successful login.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accsessToken:
+                    type: string
+                    description: JWT Token
+                  refreshToken:
+                    type: string
+                    description: JWT Token
+        401:
+          description: Bad request. Body does not contain required fields
+        403:
+          description: Incorrect or expired token          
+  /auth/signup:
     post:
       tags:
         - Signup
@@ -667,7 +710,7 @@ paths:
                 $ref: '#/components/schemas/Artist'
         400:
           description: Bad request. body does not contain required fields
-        401:
+        403:
           $ref: '#/components/responses/UnauthorizedError'
   /artist/{id}:
     parameters:
@@ -723,7 +766,7 @@ paths:
                 $ref: '#/components/schemas/Artist'
         400:
           description: Bad request. artistId is invalid (not uuid)
-        401:
+        403:
           $ref: '#/components/responses/UnauthorizedError'
         404:
           description: Artist was not found.
@@ -737,7 +780,7 @@ paths:
           description: Delelted succesfully
         400:
           description: Bad request. artistId is invalid (not uuid)
-        401:
+        403:
           $ref: '#/components/responses/UnauthorizedError'
         404:
           description: Artist was not found.
