@@ -11,10 +11,14 @@ import { Strategy } from 'passport-jwt';
 import { JwtService } from '@nestjs/jwt';
 
 const bodyExtractor = (req: Request, jwtService: JwtService): string => {
-  if (!req.body) {
+  if (
+    !req.body ||
+    !req.body['refreshToken'] ||
+    typeof req.body['refreshToken'] !== 'string'
+  ) {
     throw new UnauthorizedException({
       status: HttpStatus.UNAUTHORIZED,
-      message: 'Invalid body',
+      message: 'Invalid refresh token body',
     });
   }
 
@@ -22,7 +26,7 @@ const bodyExtractor = (req: Request, jwtService: JwtService): string => {
   if (Date.now() >= token['exp'] * 1000) {
     throw new ForbiddenException({
       status: HttpStatus.FORBIDDEN,
-      message: 'Token expired',
+      message: 'Refresh token expired',
     });
   }
 
@@ -47,8 +51,6 @@ export class JwtRefreshStrategy extends PassportStrategy(
   }
 
   async validate(req: Request, payload: { userId: string; login: string }) {
-    console.log(payload.userId);
-
     return await this.userService.findOne(payload.userId);
   }
 }

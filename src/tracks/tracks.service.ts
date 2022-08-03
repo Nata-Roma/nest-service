@@ -48,6 +48,10 @@ export class TracksService {
 
   async findOne(id: string) {
     const track = await this.prisma.track.findUnique({ where: { id } });
+    if(!track) {
+      throw new NotFoundException(`Track id: '${id}' not found`);
+    }
+
     return new Track(track);
   }
 

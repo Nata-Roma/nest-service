@@ -39,7 +39,10 @@ export class AlbumsService {
     const album = await this.prisma.album.findUnique({
       where: { id },
     });
-
+    if(!album) {
+      throw new NotFoundException(`Album id: '${id}' not found`);
+    }
+    
     return new Album(album);
   }
 

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,6 +10,10 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthsModule } from './auths/auths.module';
 import * as Joi from 'joi';
+import { APP_FILTER } from '@nestjs/core';
+import { CustomExceptionFilter } from './utils/custom-exception.filter';
+import { CustomLoggerModule } from './custom-logger/custom-logger.module';
+import { LoggerMiddleware } from './utils/loggerMiddleware';
 
 @Module({
   imports: [
@@ -29,8 +33,21 @@ import * as Joi from 'joi';
     FavoritesModule,
     PrismaModule,
     AuthsModule,
+    CustomLoggerModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: CustomExceptionFilter,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes('*');
+  }
+}

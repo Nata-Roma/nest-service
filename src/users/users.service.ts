@@ -33,14 +33,16 @@ export class UsersService {
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
-    if (!user) throw new NotFoundException();
+    if(!user) {
+      throw new NotFoundException(`User id: '${id}' not found`);
+    }
 
     return new User(user);
   }
 
   async findByLogin(login: string) {
     const user = await this.prisma.user.findUnique({ where: { login } });
-    if (!user) throw new NotFoundException();
+    if (!user) throw new NotFoundException(`User '${login}' not found`);
 
     return user;
   }
@@ -57,7 +59,7 @@ export class UsersService {
       if (!match) {
         throw new ForbiddenException({
           status: HttpStatus.FORBIDDEN,
-          message: 'Wrong credentials',
+          message: 'Invalid credentials',
         });
       }
     }

@@ -16,12 +16,14 @@ export class TracksController {
     return this.tracksService.create(createTrackDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   @Header('Content-Type', 'application/json')
   findAll() {
     return this.tracksService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @Header('Content-Type', 'application/json')
   findOne(@Param('id', new ParseUUIDPipe({version: '4'})) id: string) {

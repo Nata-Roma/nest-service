@@ -27,6 +27,7 @@ export class FavoritesController {
     return this.favoritesService.createAlbum(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.favoritesService.findAll();

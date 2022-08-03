@@ -15,11 +15,13 @@ export class AlbumsController {
     return this.albumsService.create(createAlbumDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.albumsService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id', new ParseUUIDPipe({version: '4'})) id: string) {
     return this.albumsService.findOne(id);
