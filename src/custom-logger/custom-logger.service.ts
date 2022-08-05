@@ -1,17 +1,14 @@
 import { getLogLevels } from './../utils/getLogLevels';
-import {
-  Injectable,
-  Scope,
-  ConsoleLogger,
-  ConsoleLoggerOptions,
-} from '@nestjs/common';
+import { Injectable, Scope, ConsoleLogger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 
 @Injectable({ scope: Scope.TRANSIENT })
 //@Injectable()
 export class CustomLoggerService extends ConsoleLogger {
-  fileName: string = '';
+  private fileName: string = '';
+  private fileSize: number;
+
   constructor(
     // options: ConsoleLoggerOptions,
     configService: ConfigService,
@@ -22,6 +19,7 @@ export class CustomLoggerService extends ConsoleLogger {
     // });
     super();
     this.setLogLevels(getLogLevels(environment === 'production'));
+    this.fileSize = Number(configService.get('FILE_SIZE'));
   }
 
   log(message: string, context?: string) {
@@ -84,7 +82,7 @@ export class CustomLoggerService extends ConsoleLogger {
       } else {
         const fileSize = stat.size;
 
-        if (fileSize > 2000) {
+        if (fileSize > this.fileSize) {
           this.fileName = `error_${context}_${Date.now()}.log`;
         }
         fs.appendFile(this.fileName, `${message}`, 'utf8', (err) => {

@@ -6,6 +6,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   private customLoggerService: CustomLoggerService;
+
   constructor(private configService: ConfigService) {
     this.customLoggerService = new CustomLoggerService(this.configService);
     this.customLoggerService.setContext(LoggerMiddleware.name);
